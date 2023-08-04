@@ -1,6 +1,7 @@
 package ru.netology.sender;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,12 +15,62 @@ import ru.netology.geo.GeoService;
 import ru.netology.i18n.LocalizationService;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static ru.netology.geo.GeoServiceImpl.*;
 
 class MessageSenderImplTest {
-    MessageSender sut;
+
+    @Test
+
+    void SendRu() {
+        GeoService geoService = Mockito.mock(GeoService.class);
+        Mockito.when(geoService.byIp(Mockito.startsWith("172.")))
+                .thenReturn(new Location("Moscow",Country.RUSSIA, null, 0));
+        LocalizationService localizationService = Mockito.mock(LocalizationService.class);
+        Mockito.when(localizationService.locale(Country.RUSSIA))
+                .thenReturn("Добро пожаловать");
+        MessageSenderImpl sut = new MessageSenderImpl(geoService, localizationService);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(MessageSenderImpl.IP_ADDRESS_HEADER, "172.0.32.11");
+        String expected = "Добро пожаловать";
+        String result = sut.send(headers);
+        Assert.assertEquals(result, expected);
+    }
+
+    @Test
+    void SendEn() {
+        GeoService geoService = Mockito.mock(GeoService.class);
+        Mockito.when(geoService.byIp(Mockito.startsWith("96.")))
+                .thenReturn(new Location("New York", Country.USA, null,  0));
+        LocalizationService localizationService = Mockito.mock(LocalizationService.class);
+        Mockito.when(localizationService.locale(Country.USA))
+                .thenReturn("Welcome");
+        MessageSenderImpl sut = new MessageSenderImpl(geoService, localizationService);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(MessageSenderImpl.IP_ADDRESS_HEADER, "96.44.183.149");
+        String expected = "Welcome";
+        String result = sut.send(headers);
+        Assert.assertEquals(result, expected);
+    }
+    @Test
+    void SendOther() {
+        GeoService geoService = Mockito.mock(GeoService.class);
+        Mockito.when(geoService.byIp(Mockito.startsWith("105.")))
+                .thenReturn(new Location("New York", Country.USA, null,  0));
+        LocalizationService localizationService = Mockito.mock(LocalizationService.class);
+        Mockito.when(localizationService.locale(Country.USA))
+                .thenReturn("Welcome");
+        MessageSenderImpl sut = new MessageSenderImpl(geoService, localizationService);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(MessageSenderImpl.IP_ADDRESS_HEADER, "105.44.183.149");
+        String expected = "Welcome";
+        String result = sut.send(headers);
+        Assert.assertEquals(result, expected);
+    }
+
+    /*MessageSender sut;
     //LocalizationService localizationService = Mockito.spy(new LocalizationServiceImpl());/
     //GeoService geoService = Mockito.spy(new GeoServiceImpl());
     @Mock
@@ -52,6 +103,8 @@ class MessageSenderImplTest {
             @Override
             public Location answer(InvocationOnMock invocation) throws Throwable {
                 String ip = invocation.getArgument(0, String.class);
+
+
                 if (LOCALHOST.equals(ip)) {
                     return new Location(null, null, null, 0);
                 } else if (MOSCOW_IP.equals(ip)) {
@@ -82,6 +135,6 @@ class MessageSenderImplTest {
         sut = new MessageSenderImpl(geoService, localizationService);
         String result = sut.send(headers);
         Assert.assertEquals(result, expected);
-    }
+    }*/
 }
 
